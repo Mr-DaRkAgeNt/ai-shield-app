@@ -1,13 +1,197 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Shield | Protect Your Image</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a nicer look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; /* gray-50 */
+        }
+        /* Simple spinner animation */
+        .spinner {
+            border-color: #34d399; /* teal-400 */
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <!-- Header -->
+    <header class="absolute top-0 left-0 right-0 p-4">
+        <div class="container mx-auto flex justify-center items-center">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <h1 class="text-xl font-bold tracking-tighter text-gray-900">AI-Shield</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Card -->
+    <div id="appCard" class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-200 transition-all duration-300">
+        
+        <!-- Upload View -->
+        <div id="uploadView">
+            <h2 class="text-2xl font-bold text-center mb-2">Protect Your Photo</h2>
+            <p class="text-gray-600 text-center mb-6">Upload an image to add a protective layer against AI.</p>
+            <div id="dropZone" class="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors border-gray-300 bg-gray-50 hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                <p class="text-xs text-gray-500">PNG or JPG (MAX 10MB)</p>
+                <input id="fileInput" type="file" class="hidden" accept="image/png, image/jpeg" />
+            </div>
+            <p id="errorText" class="text-red-500 text-sm text-center mt-4 h-5"></p>
+        </div>
+
+        <!-- Processing View -->
+        <div id="processingView" class="hidden flex-col items-center justify-center p-12 text-center">
+            <div class="spinner w-16 h-16 border-4 rounded-full"></div>
+            <p class="mt-4 text-lg font-semibold text-gray-800">Applying Protective Layer...</p>
+        </div>
+
+        <!-- Success View -->
+        <div id="successView" class="hidden text-center">
+             <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-teal-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <h2 class="text-3xl font-bold text-gray-900">Protection Complete!</h2>
+            <p class="text-gray-600 mt-1 mb-6">Your image is now armored and ready to share.</p>
+            <div id="resultContainer" class="flex flex-col items-center">
+                <!-- Armored image and download link will be inserted here by JavaScript -->
+            </div>
+            <button id="resetButton" class="w-full mt-4 text-center text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors">
+                Protect Another Image
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const errorText = document.getElementById('errorText');
+        
+        const uploadView = document.getElementById('uploadView');
+        const processingView = document.getElementById('processingView');
+        const successView = document.getElementById('successView');
+        const resultContainer = document.getElementById('resultContainer');
+        const resetButton = document.getElementById('resetButton');
+
+        // The URL for our backend function
+        const API_URL = '/api/immunize';
+
+        // --- Event Listeners ---
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-teal-500', 'bg-teal-50');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-teal-500', 'bg-teal-50'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-teal-500', 'bg-teal-50');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        resetButton.addEventListener('click', resetApp);
+
+        // --- Core Functions ---
+
+        function handleFile(file) {
+            if (!file) return;
+
+            // Validate file type and size
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                errorText.textContent = 'Invalid file type. Please upload a PNG or JPG.';
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                errorText.textContent = 'File is too large. Max size is 10MB.';
+                return;
+            }
+            errorText.textContent = '';
+
+            // Switch to the processing view and start the process
+            switchToView('processing');
+            processAndUpload(file);
+        }
+
+        async function processAndUpload(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'The server failed to process the image.');
+                }
+
+                const data = await response.json();
+                showSuccess(data.immunizedImage);
+
+            } catch (err) {
+                console.error('Fetch error:', err);
+                errorText.textContent = err.message || 'An unknown error occurred.';
+                switchToView('upload');
+            }
+        }
+        
+        function showSuccess(imageUrl) {
+            resultContainer.innerHTML = ''; // Clear previous results
+            
+            // Create the preview image
+            const resultImg = document.createElement('img');
+            resultImg.src = imageUrl;
+            resultImg.alt = 'Armored Image';
+            resultImg.className = 'w-full max-w-sm mx-auto rounded-lg shadow-lg border border-gray-200';
+
+            // Create the download link
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageUrl;
+            downloadLink.download = 'armored-image.png';
+            downloadLink.textContent = 'Download Protected Image';
+            downloadLink.className = 'w-full max-w-sm mt-4 inline-block px-6 py-3 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transition-colors shadow-lg';
+            
+            resultContainer.appendChild(resultImg);
+            resultContainer.appendChild(downloadLink);
+
+            switchToView('success');
+        }
+
+        function switchToView(viewName) {
+            uploadView.style.display = 'none';
+            processingView.style.display = 'none';
+            successView.style.display = 'none';
+
+            if (viewName === 'upload') uploadView.style.display = 'block';
+            if (viewName === 'processing') processingView.style.display = 'flex';
+            if (viewName === 'success') successView.style.display = 'block';
+        }
+
+        function resetApp() {
+            switchToView('upload');
+            fileInput.value = '';
+        }
+    </script>
+</body>
 </html>
