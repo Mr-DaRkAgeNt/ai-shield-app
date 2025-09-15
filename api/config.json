@@ -1,0 +1,15 @@
+{
+"server": {
+"port": 3001
+},
+"imageProcessing": {
+"fileSizeLimitMB": 10,
+"allowedMimeTypes": [
+"image/jpeg",
+"image/png"
+]
+},
+"immunizer": {
+"enabled": true
+}
+}
