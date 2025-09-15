@@ -35,6 +35,15 @@ const InfoIcon = ({className}) => ( <svg xmlns="http://www.w3.org/2000/svg" clas
 export default function App() {
     const [page, setPage] = useState('landing');
     const [user, setUser] = useState(null);
+    const [message, setMessage] = useState(null); // New state for the message box
+
+    const showMessage = (text, type = 'info') => {
+        setMessage({ text, type });
+    };
+
+    const closeMessage = () => {
+        setMessage(null);
+    };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -48,14 +57,60 @@ export default function App() {
 
     return (
         <main className="relative min-h-screen text-gray-800 font-sans bg-gray-50 overflow-x-hidden">
+            <AnimatePresence>
+                {message && <MessageBox message={message.text} type={message.type} onClose={closeMessage} />}
+            </AnimatePresence>
             <Header user={user} onLogin={handleLogin} onLogout={handleLogout} />
             <AnimatePresence mode="wait">
-                {page === 'landing' && <LandingPage key="landing" onStart={() => setPage('app')} />}
+                {page === 'landing' && <LandingPage key="landing" onStart={() => setPage('app')} onShowMessage={() => showMessage("Welcome to AI-Shield! This is an informational message.", "info")} />}
                 {page === 'app' && <ImmunizerApp key="app" user={user} onLogin={handleLogin} />}
             </AnimatePresence>
         </main>
     );
 }
+
+// --- NEW MessageBox Component ---
+const MessageBox = ({ message, type, onClose }) => {
+    const icons = {
+        info: <InfoIcon className="w-8 h-8 text-blue-500" />,
+        success: <ShieldCheckIcon className="w-8 h-8 text-green-500" />,
+        error: <AlertTriangleIcon className="w-8 h-8 text-red-500" />,
+    };
+
+    const colors = {
+        info: 'border-blue-500',
+        success: 'border-green-500',
+        error: 'border-red-500',
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        >
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+                className={`w-full max-w-md bg-white rounded-2xl shadow-xl border-t-4 ${colors[type]} p-6 text-center`}
+            >
+                <div className="mx-auto mb-4">{icons[type]}</div>
+                <p className="text-gray-700 mb-6">{message}</p>
+                <button
+                    onClick={onClose}
+                    className="bg-gray-800 text-white font-semibold py-2 px-8 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                    Close
+                </button>
+            </motion.div>
+        </motion.div>
+    );
+};
+
 
 const Header = ({ user, onLogin, onLogout }) => (
     <header className="absolute top-0 left-0 right-0 p-4 z-10">
@@ -77,7 +132,7 @@ const Header = ({ user, onLogin, onLogout }) => (
     </header>
 );
 
-const LandingPage = ({ onStart }) => (
+const LandingPage = ({ onStart, onShowMessage }) => (
     <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -100,15 +155,26 @@ const LandingPage = ({ onStart }) => (
         >
             AI-Shield adds an invisible, protective layer to your photos, making them unusable for deepfake creation and online harassment.
         </motion.p>
-        <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.4 }}
-            onClick={onStart}
-            className="px-8 py-4 bg-teal-600 text-white text-lg font-bold rounded-full hover:bg-teal-700 transition-colors shadow-lg"
-        >
-            Protect a Photo Now
-        </motion.button>
+        <div className="flex items-center gap-4">
+             <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.4 }}
+                onClick={onStart}
+                className="px-8 py-4 bg-teal-600 text-white text-lg font-bold rounded-full hover:bg-teal-700 transition-colors shadow-lg"
+            >
+                Protect a Photo Now
+            </motion.button>
+             <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.5 }}
+                onClick={onShowMessage}
+                className="px-6 py-3 bg-gray-200 text-gray-700 text-base font-bold rounded-full hover:bg-gray-300 transition-colors"
+            >
+                How it Works
+            </motion.button>
+        </div>
     </motion.div>
 );
 
