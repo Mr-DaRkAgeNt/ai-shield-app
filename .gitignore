@@ -1,6 +1,7 @@
 # Dependencies and build files
 node_modules
 /frontend/dist
+/api/node_modules
 
 # Environment variables (SECRETS)
 # This ensures your API keys are NEVER uploaded
