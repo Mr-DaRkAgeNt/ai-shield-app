@@ -92,8 +92,9 @@
         const resultContainer = document.getElementById('resultContainer');
         const resetButton = document.getElementById('resetButton');
 
-        // The URL for our backend function
-        const API_URL = '/api/immunize';
+        // The URL for our backend function. For local testing, it's a full URL.
+        // For Vercel/Netlify, this will become a relative path.
+        const API_URL = 'http://localhost:3001/api/immunize';
 
         // --- Event Listeners ---
         dropZone.addEventListener('click', () => fileInput.click());
@@ -111,22 +112,19 @@
         resetButton.addEventListener('click', resetApp);
 
         // --- Core Functions ---
-
         function handleFile(file) {
             if (!file) return;
-
-            // Validate file type and size
-            if (!['image/jpeg', 'image/png'].includes(file.type)) {
-                errorText.textContent = 'Invalid file type. Please upload a PNG or JPG.';
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            errorText.textContent = ''; // Clear previous errors
+            
+             if (file.size > 10 * 1024 * 1024) { 
                 errorText.textContent = 'File is too large. Max size is 10MB.';
                 return;
             }
-            errorText.textContent = '';
+             if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                errorText.textContent = 'Invalid file type. Please upload a PNG or JPG.';
+                return;
+            }
 
-            // Switch to the processing view and start the process
             switchToView('processing');
             processAndUpload(file);
         }
@@ -136,6 +134,7 @@
             formData.append('image', file);
 
             try {
+                // When you deploy, you might change API_URL to just '/api/immunize'
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     body: formData
@@ -157,15 +156,13 @@
         }
         
         function showSuccess(imageUrl) {
-            resultContainer.innerHTML = ''; // Clear previous results
+            resultContainer.innerHTML = ''; 
             
-            // Create the preview image
             const resultImg = document.createElement('img');
             resultImg.src = imageUrl;
             resultImg.alt = 'Armored Image';
             resultImg.className = 'w-full max-w-sm mx-auto rounded-lg shadow-lg border border-gray-200';
 
-            // Create the download link
             const downloadLink = document.createElement('a');
             downloadLink.href = imageUrl;
             downloadLink.download = 'armored-image.png';
